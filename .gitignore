@@ -1,2 +1,4 @@
-./.vscode
-./build
+.vscode
+build
+.DS_store
+.gitignore
