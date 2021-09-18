@@ -20,7 +20,26 @@ class PropositionalFormula {
     std::vector<Leaf*> leaves;
   };
 
+  void correctVariable(std::string var) {
+    bool p_digit = false;
+    for (auto sym : var) {
+      bool digit;
+      if (sym >= 'a' and sym <= 'z')
+        digit = false;
+      else if (sym >= '0' and sym <= '9')
+        digit = true;
+      else
+        throw std::invalid_argument("Incorrect variable: invalid symbol in variable name");
+
+      if (p_digit and !digit) 
+        throw std::invalid_argument("Incorrect variable: letter symbol after digits");
+      
+      p_digit = digit;
+    }
+  }
+
   Leaf* createLeaf(std::string x) {
+    correctVariable(x);
     Leaf* l = new Leaf();
     l->value = x;
     return l;
