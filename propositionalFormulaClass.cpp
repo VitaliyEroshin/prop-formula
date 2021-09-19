@@ -23,10 +23,12 @@ class Formula {
   std::set<std::string> variables;
 
   std::map<std::string, std::string> getSymbol = 
-    {{"and", "∧"}, {"or", "∨"}, {"implies", "⇒"}, {"not", "¬"}};
+    {{"and", "∧"}, {"or", "∨"}, {"implies", "⇒"}, {"implies", "→"}, {"not", "¬"}};
 
   std::map<std::string, std::string> getOperator =
-    {{"∧", "and"}, {"∨", "or"}, {"⇒", "implies"}, {"¬", "not"}};
+    {{"∧", "and"}, {"∨", "or"}, {"⇒", "implies"}, {"→", "implies"}, {"¬", "not"}};
+
+  std::set<std::string> operationSymbols = {"∧", "∨", "⇒", "→"}; // not is special case.
 
   struct Leaf {
     std::string value;
@@ -97,6 +99,16 @@ class Formula {
       pushLeafNode(node, is_leaf, batch);
   }
 
+  void setOperator(Node* &node, std::string s) {
+    node->op = s;
+    if (getOperator.count(s))
+      node->op = getOperator[s];
+
+    if (node->op == "implies" && !node->leaves.empty()) {
+      node->leaf_first = true;
+    }
+  }
+
   Node* createNode(std::string s) {
     Node* node = new Node();
 
@@ -104,14 +116,27 @@ class Formula {
 
     std::string batch = "";
     int balance = 0;
-      
     for (auto x : s) {
       batch.push_back(x);
-
+      
       if ((batch == "not" or batch == "¬") and balance == 0) {
         batch = "";
         is_not = true;
       }
+
+      /*
+      else if (operationSymbols.count("0")) {
+
+        std::string t_op = "";
+        t_op.push_back(batch.back());
+        setOperator(node, t_op);
+        batch.pop_back();
+        push(node, is_leaf, is_not, batch);
+        is_leaf = true;
+        is_op = false;
+      }
+      */
+     
       else if (x == '(') {
         is_leaf = false;
         if (balance == 0)
@@ -128,13 +153,7 @@ class Formula {
         batch.pop_back();
 
         if (is_op) {
-          node->op = batch;
-          if (getOperator.count(batch))
-            node->op = getOperator[batch];
-
-          if (node->op == "implies" && !node->leaves.empty()) {
-            node->leaf_first = true;
-          }
+          setOperator(node, batch);
           is_op = false;
           is_leaf = true;
         } 
