@@ -9,7 +9,10 @@ int main() {
 
   std::string s;
   std::getline(std::cin, s);
-  PropositionalFormula form;
+  prop::Formula form;
   form.read(s);
-  std::cout<< form.show() << '\n';
+  prop::varEval v;
+  //v.push("a1", 1);
+  
+  std::cout<< form.eval(v) << '\n';
 }

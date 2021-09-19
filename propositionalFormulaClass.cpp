@@ -2,7 +2,23 @@
 #include <vector>
 #include <map>
 
-class PropositionalFormula {
+namespace prop {
+
+struct varEval {
+  std::map<std::string, bool> rule;
+
+  void push(std::string var_name, bool var_value) {
+    rule[var_name] = var_value;
+  }
+
+  bool get(std::string var_name) {
+    if (rule.count(var_name) == 0)
+      throw std::invalid_argument("Variable is not defined.");
+    return rule[var_name];
+  }
+};
+
+class Formula {
 
   std::map<std::string, std::string> getSymbol = 
     {{"and", "∧"}, {"or", "∨"}, {"implies", "⇒"}, {"not", "¬"}};
@@ -15,6 +31,7 @@ class PropositionalFormula {
   };
 
   struct Node {
+    bool leaf_first = false;
     std::string op = "";
     std::vector<Node*> nodes;
     std::vector<Leaf*> leaves;
@@ -111,6 +128,10 @@ class PropositionalFormula {
           node->op = batch;
           if (getOperator.count(batch))
             node->op = getOperator[batch];
+
+          if (node->op == "implies" && !node->leaves.empty()) {
+            node->leaf_first = true;
+          }
           is_op = false;
           is_leaf = true;
         } 
@@ -124,18 +145,51 @@ class PropositionalFormula {
     }
       
     push(node, is_leaf, is_not, batch);
-    
-    if (node->leaves.size() + node->nodes.size() == 1) {
+    int node_size = node->leaves.size() + node->nodes.size();
+
+    if (node_size == 1) {
       node->op = "()";
       if (node->nodes.size()) {
         node = node->nodes[0];
       }
     }
     
+    if (node_size > 2)
+      throw std::invalid_argument("Too many variables");
+      
     return node;
   }
 
   Node* head;
+
+  bool eval(Node* node, varEval &var_eval) {
+    std::vector<bool> nodes_value;
+    if (node->leaf_first)
+      for (auto x : node->leaves) 
+        nodes_value.push_back(var_eval.get(x->value));
+    
+    for (auto x : node->nodes) 
+      nodes_value.push_back(eval(x, var_eval));
+    
+    if (!node->leaf_first)
+      for (auto x : node->leaves) 
+        nodes_value.push_back(var_eval.get(x->value));
+    
+
+    if (node->op == "not") 
+      return !nodes_value.back();
+    else if (node->op == "()")
+      return nodes_value.back();
+    else if (node->op == "or")
+      return (nodes_value[0] || nodes_value[1]);
+    else if (node->op == "and")
+      return (nodes_value[0] && nodes_value[1]);
+    else if (node->op == "implies") 
+      return (!nodes_value[0] || nodes_value[1]);
+    
+    throw std::invalid_argument("Unknown logic operation");
+    return false;
+  }
 
   std::string show(Node* x) {
     if (x->op == "not" and x->nodes.size())
@@ -172,4 +226,9 @@ class PropositionalFormula {
     std::string show() {
       return show(head);
     }
+    bool eval(varEval &v) {
+      return eval(head, v);
+    }
 };
+
+}
