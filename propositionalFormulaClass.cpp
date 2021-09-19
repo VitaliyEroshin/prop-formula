@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 
 namespace prop {
 
@@ -19,6 +20,7 @@ struct varEval {
 };
 
 class Formula {
+  std::set<std::string> variables;
 
   std::map<std::string, std::string> getSymbol = 
     {{"and", "∧"}, {"or", "∨"}, {"implies", "⇒"}, {"not", "¬"}};
@@ -58,6 +60,7 @@ class Formula {
   Leaf* createLeaf(std::string x) {
     correctVariable(x);
     Leaf* l = new Leaf();
+    variables.insert(x);
     l->value = x;
     return l;
   }
@@ -191,6 +194,48 @@ class Formula {
     return false;
   }
 
+  bool sat(Node* node) {
+    // bruteforce algorithm.
+
+    prop::varEval v;
+    std::vector<bool> tmp;
+    for (int ev = 0; ev < (1<<variables.size()); ev++) {
+      int t = ev;
+      for (int i = 0; i < variables.size(); i++) {
+        tmp.push_back(t&1);
+        t>>=1;
+      }
+      for (auto x : variables) {
+        v.push(x, tmp.back());
+        tmp.pop_back();
+      }
+      if (eval(v))
+        return true;
+    }
+    return false;
+  }
+
+  bool taut(Node* node) {
+    // bruteforce algorithm.
+
+    prop::varEval v;
+    std::vector<bool> tmp;
+    for (int ev = 0; ev < (1<<variables.size()); ev++) {
+      int t = ev;
+      for (int i = 0; i < variables.size(); i++) {
+        tmp.push_back(t&1);
+        t>>=1;
+      }
+      for (auto x : variables) {
+        v.push(x, tmp.back());
+        tmp.pop_back();
+      }
+      if (!eval(v))
+        return false;
+    }
+    return true;
+  }
+
   std::string show(Node* x) {
     if (x->op == "not" and x->nodes.size())
       return "¬(" + show(x->nodes.back()) + ")";
@@ -228,6 +273,12 @@ class Formula {
     }
     bool eval(varEval &v) {
       return eval(head, v);
+    }
+    bool sat() {
+      return sat(head);
+    }
+    bool taut() {
+      return taut(head);
     }
 };
 
