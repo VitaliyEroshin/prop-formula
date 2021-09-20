@@ -13,8 +13,5 @@ int main() {
   form.read(s);
   prop::varEval v;
   v.push("a1", 1);
-  
-  std::cout<< form.taut() << '\n';
-  
-  
+  std::cout<< form.taut(true) << '\n';
 }

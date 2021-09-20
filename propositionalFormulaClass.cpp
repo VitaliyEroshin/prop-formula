@@ -186,6 +186,7 @@ class Formula {
 
   bool eval(Node* node, varEval &var_eval) {
     std::vector<bool> nodes_value;
+    
     if (node->leaf_first)
       for (auto x : node->leaves) 
         nodes_value.push_back(var_eval.get(x->value));
@@ -196,6 +197,36 @@ class Formula {
     if (!node->leaf_first)
       for (auto x : node->leaves) 
         nodes_value.push_back(var_eval.get(x->value));
+    
+
+    if (node->op == "not") 
+      return !nodes_value.back();
+    else if (node->op == "()")
+      return nodes_value.back();
+    else if (node->op == "or")
+      return (nodes_value[0] || nodes_value[1]);
+    else if (node->op == "and")
+      return (nodes_value[0] && nodes_value[1]);
+    else if (node->op == "implies") 
+      return (!nodes_value[0] || nodes_value[1]);
+    
+    throw std::invalid_argument("Unknown logic operation");
+    return false;
+  }
+
+  bool eval(Node* node, bool (*f)(std::string)) {
+    std::vector<bool> nodes_value;
+    
+    if (node->leaf_first)
+      for (auto x : node->leaves) 
+        nodes_value.push_back(f(x->value));
+    
+    for (auto x : node->nodes) 
+      nodes_value.push_back(eval(x, f));
+    
+    if (!node->leaf_first)
+      for (auto x : node->leaves) 
+        nodes_value.push_back(f(x->value));
     
 
     if (node->op == "not") 
@@ -287,17 +318,34 @@ class Formula {
     void read(std::string s) {
       head = createNode(s);
     }
+    
     std::string show() {
       return show(head);
     }
+
     bool eval(varEval &v) {
+      
       return eval(head, v);
     }
-    bool sat() {
-      return sat(head);
+
+    bool sat(bool calc_time = false) {
+      auto start = std::chrono::steady_clock::now();
+      bool res = sat(head);
+      if (!calc_time)
+        return res;
+      auto end = std::chrono::steady_clock::now();
+      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << " ns\n";
+      return res;
     }
-    bool taut() {
-      return taut(head);
+    
+    bool taut(bool calc_time = false) {
+      auto start = std::chrono::steady_clock::now();
+      bool res = taut(head);
+      if (!calc_time)
+        return res;
+      auto end = std::chrono::steady_clock::now();
+      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << " ns\n";
+      return res;
     }
 };
 
