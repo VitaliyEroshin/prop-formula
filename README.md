@@ -3,8 +3,18 @@
 Well, first you need to import the class into your c++ project like so:\
 ```#include "PropositionalFormulaClass.cpp```\
 Next, you need to create propositional formula in your code:\
-```PropositionalFormula formula;```\
+```porp::PropositionalFormula formula;```\
 Now you can set the formula with ```formula.read(string)``` or get a string that represents it ```string s = formula.show()```
+## For what?
+You can evaluate formula on function that returns bool value by variable name\
+``` formula.evaluate(f)``` where f is ```bool f(std::string)```, or, you can use special struct I created in porputil.
+```
+proputil::Evaluation v;
+v.push("a1", true);
+formula.evaluate(v); // returns bool
+```
+Also there are ```formula.sat()``` and ```formula.taut()``` that check whether the forumla is SAT or TAUT.
+
 ## Syntax
 There is several main rules how to set the formula:\
 Let ```s1, s2``` be correct propositional formulas or variables, ```*``` is logic operation (or, and, implies or their unicode symbols)
