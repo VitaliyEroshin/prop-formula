@@ -28,13 +28,21 @@ namespace proputil {
 
   std::set<std::string> operation_symbols = {"∧", "∨", "→"}; 
 
+  bool is_digit(char x) {
+    return (x >= '0') and (x <= '9');
+  }
+
+  bool is_letter(char x) {
+    return (x >= 'a') and (x <= 'z');
+  }
+
   void is_variable(std::string var) {
     bool p_digit = false;
     for (auto sym : var) {
       bool digit;
-      if (sym >= 'a' and sym <= 'z')
+      if (is_letter(sym))
         digit = false;
-      else if (sym >= '0' and sym <= '9')
+      else if (is_digit(sym))
         digit = true;
       else
         throw std::invalid_argument("Incorrect variable: invalid symbol in variable name");

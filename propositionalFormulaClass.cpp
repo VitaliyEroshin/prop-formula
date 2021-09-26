@@ -236,7 +236,7 @@ class Formula {
       if (!calc_time)
         return res;
       auto end = std::chrono::steady_clock::now();
-      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << " ns\n";
+      std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
       return res;
     }
     
@@ -246,7 +246,7 @@ class Formula {
       if (!calc_time)
         return res;
       auto end = std::chrono::steady_clock::now();
-      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() << " ns\n";
+      std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
       return res;
     }
 };
