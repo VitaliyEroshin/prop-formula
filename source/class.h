@@ -8,15 +8,15 @@
 namespace form {
   class Formula {
     struct Node {
-      bool leaf;
-      std::string value;
+      bool leaf = false;
+      std::string value = "";
       std::vector<Node*> nodes;
     };
     std::set<std::string> variables;
     Node* root;
 
-    void push_node();
-    void push();
+    void push_node(Node* &node, bool is_leaf, std::string batch);
+    void push(Node* &node, bool is_leaf, bool &is_not, std::string batch);
     void set_operator(Node* &node, std::string s);
     Node* create_node(std::string s);
     bool process(std::vector<bool> values, std::string operation);

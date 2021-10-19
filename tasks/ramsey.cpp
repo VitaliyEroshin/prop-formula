@@ -1,0 +1,60 @@
+#include "ramsey.h"
+
+void fnc::cnR(int n, int R, std::vector<int> &subset, std::string &result, std::string prefix,
+              std::string inside, std::string outside) {
+  /*
+    Recursively generates subsets of [R] of size n.
+  */
+
+  int size = subset.size();
+  if (size == n) {
+    std::string t = "";
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < i; j++) {
+        t += prefix + "x" + std::to_string(subset[j] * 10 + subset[i]) + " " + inside + " ";
+      }
+    }
+
+    while (!util::is_digit(t.back())) {
+      t.pop_back();
+    }
+      
+    result += "(" + t + ") " + outside  + " ";
+  }
+
+  int start = 1;
+  if (size) {
+    start = subset.back() + 1;
+  }
+
+  for (int i = start; i <= R; i++) {
+    subset.push_back(i);
+    cnR(n, R, subset, result, prefix);
+    subset.pop_back();
+  }
+}
+
+std::string fnc::generate_ramsey_formula(int R, int n, int m) {
+  std::string result = "(";
+  std::vector<int> subset;
+  fnc::cnR(n, R, subset, result);
+
+  while (result.back() != ')')
+    result.pop_back();
+
+  result += ") ∨ (";
+
+  fnc::cnR(m, R, subset, result, "¬");
+
+  while (result.back() != ')')
+    result.pop_back();
+  result += ")";
+  return result;
+}
+
+bool fnc::ramsey(int R, int n, int m, bool print_time) {
+  std::string formula = fnc::generate_ramsey_formula(R, n, m);
+  form::Formula form;
+  form.read(formula);
+  return form.taut(print_time);
+}

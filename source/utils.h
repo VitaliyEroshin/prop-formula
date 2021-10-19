@@ -14,8 +14,11 @@ namespace util {
   bool is_letter(char x);
   void is_variable(std::string var);
 
-  std::map<std::string, std::string> get_symbol;
-  std::map<std::string, std::string> get_operator;
-  std::set<std::string> operation_symbols;
+  std::string get_symbol(std::string x);
+  std::string get_operator(std::string x);
+  bool in_get_operator(std::string x);
+  bool operation_symbols(std::string x);
+  
+   
 
 }

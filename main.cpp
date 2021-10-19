@@ -1,4 +1,5 @@
-#include "./tasks/functions.cpp"
+#include "./tasks/ramsey.h"
+#include <iostream>
 
 int main() {
   #ifdef local
@@ -6,5 +7,6 @@ int main() {
     freopen("./io/output.txt", "w", stdout);
   #endif
 
-  std::cout << ramsey(6, 2, 2);
+  //fnc::ramsey(6, 2, 2);
+  std::cout << fnc::ramsey(6, 2, 2, false);
 }
