@@ -1,6 +1,6 @@
-#include "propositionalFormulaUtils.cpp"
+#include "class.h"
 
-namespace prop {
+namespace form {
 
 class Formula {
   struct Node {
@@ -14,7 +14,7 @@ class Formula {
 
   void push_node(Node* &node, bool is_leaf, std::string batch) {
     if (is_leaf) {
-      proputil::is_variable(batch);
+      util::is_variable(batch);
       variables.insert(batch);
 
       Node* t = new Node();
@@ -40,8 +40,8 @@ class Formula {
 
   void set_operator(Node* &node, std::string s) {
     node->value = s;
-    if (proputil::get_operator.count(s))
-      node->value = proputil::get_operator[s];
+    if (util::get_operator.count(s))
+      node->value = util::get_operator[s];
   }
 
   Node* create_node(std::string s) {
@@ -127,7 +127,7 @@ class Formula {
     return r;
   }
 
-  bool eval(Node* node, proputil::Evaluation &var_eval) {
+  bool eval(Node* node, util::Evaluation &var_eval) {
     if (node->leaf)
       return var_eval.get(node->value);
 
@@ -154,7 +154,7 @@ class Formula {
   bool sat(Node* node) {
     // bruteforce algorithm.
 
-    proputil::Evaluation v;
+    util::Evaluation v;
     std::vector<bool> tmp;
     for (int ev = 0; ev < (1<<variables.size()); ev++) {
       int t = ev;
@@ -175,7 +175,7 @@ class Formula {
   bool taut(Node* node) {
     // bruteforce algorithm.
 
-    proputil::Evaluation v;
+    util::Evaluation v;
     std::vector<bool> tmp;
     for (int ev = 0; ev < (1<<variables.size()); ev++) {
       int t = ev;
@@ -208,7 +208,7 @@ class Formula {
     for (auto x : node->nodes) {
       res += show(x);
       if (x != node->nodes.back())
-        res += " " + proputil::get_symbol[node->value] + " ";
+        res += " " + util::get_symbol[node->value] + " ";
       
     }
     
@@ -226,7 +226,7 @@ class Formula {
       return show(root);
     }
 
-    bool eval(proputil::Evaluation &v) {
+    bool eval(util::Evaluation &v) {
       return eval(root, v);
     }
 

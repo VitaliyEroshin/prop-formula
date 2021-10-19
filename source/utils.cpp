@@ -1,10 +1,6 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
+#include "utils.h"
 
-namespace proputil {
+namespace util {
   struct Evaluation {
     std::map<std::string, bool> rule;
 

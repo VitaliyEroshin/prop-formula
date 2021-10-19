@@ -1,5 +1,4 @@
-#include "propositionalFormulaClass.cpp"
-#include "propositionalFormulaFuncs.cpp"
+#include "./tasks/functions.cpp"
 
 int main() {
   #ifdef local
@@ -7,5 +6,5 @@ int main() {
     freopen("./io/output.txt", "w", stdout);
   #endif
 
-  std::cout << propfunc::phi(6, 2, 2);
+  std::cout << ramsey(6, 2, 2);
 }
