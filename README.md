@@ -71,4 +71,5 @@ Now you can check if N can be chromatic number of the graph
 ```
 fnc::color({{0, 1}, {1, 2}}, 2);
 ```
+Here, {{0, 1}, {1, 2}} is a vector of pairs (```vector<pair<int, int>>```), where pairs are edges.
 And you can add ```true``` flag as last argument to output the time.
