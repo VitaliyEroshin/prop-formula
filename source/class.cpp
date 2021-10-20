@@ -202,7 +202,7 @@ std::string form::Formula::show() {
 }
 
 bool form::Formula::eval(util::Evaluation &v) {
-  return 1; //eval(form::Formula::root, v);
+  return eval(form::Formula::root, v);
 }
 
 bool form::Formula::sat(bool calc_time) {
@@ -223,4 +223,8 @@ bool form::Formula::taut(bool calc_time) {
   auto end = std::chrono::steady_clock::now();
   std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
   return res;
+}
+
+form::Formula::Node* form::Formula::get_root() {
+  return form::Formula::root;
 }
