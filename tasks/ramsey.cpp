@@ -11,7 +11,7 @@ void fnc::cnR(int n, int R, std::vector<int> &subset, std::string &result, std::
     std::string t = "";
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < i; j++) {
-        t += prefix + "x" + std::to_string(subset[j] * 10 + subset[i]) + " " + inside + " ";
+        t += prefix + "x" + std::to_string(subset[j] * R + subset[i]) + " " + inside + " ";
       }
     }
 
@@ -54,6 +54,12 @@ std::string fnc::generate_ramsey_formula(int R, int n, int m) {
 
 bool fnc::ramsey(int R, int n, int m, bool print_time) {
   std::string formula = fnc::generate_ramsey_formula(R, n, m);
+
+  /*
+    There you can uncomment the line to print generated formula.
+  */
+
+  // std::cout << formula;
   form::Formula form;
   form.read(formula);
   return form.taut(print_time);
