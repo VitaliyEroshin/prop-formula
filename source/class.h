@@ -7,13 +7,15 @@
 
 namespace form {
   class Formula {
-    std::set<std::string> variables;
-    public:
+    
+    private:
+      std::set<std::string> variables;
       struct Node {
         bool leaf = false;
         std::string value = "";
         std::vector<Node*> nodes;
       };
+      Node* root;
 
       void push_node(Node* &node, bool is_leaf, std::string batch);
       void push(Node* &node, bool is_leaf, bool &is_not, std::string batch);
@@ -25,8 +27,8 @@ namespace form {
       bool sat(Node* node);
       bool taut(Node* node);
       std::string show(Node* node);
-      
-      Node* root;
+
+    public:
       void read(std::string s);
       std::string show();
       bool eval(util::Evaluation &v);
