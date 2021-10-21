@@ -2,4 +2,4 @@
 build
 .DS_store
 .gitignore
-./release.dSYM
+release.dSYM
