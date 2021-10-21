@@ -95,14 +95,16 @@ bool form::Formula::process(std::vector<bool> values, std::string operation) {
   bool r = values.back();
   values.pop_back();
   for (auto x : values) {
-    if (operation == "or")
+    if (operation == "or") {
       r |= x;
-      
-    if (operation == "and")
+    } else if (operation == "and") {
       r &= x;
+    } else if (operation == "xor") {
+      r ^= x;
+    }
   }
 
-  if (operation != "or" and operation != "and")
+  if (operation != "or" and operation != "and" and operation != "xor")
     throw std::invalid_argument("Unknown logic operation");
 
   return r;
