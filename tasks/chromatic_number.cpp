@@ -4,7 +4,7 @@ std::string fnc::generate_chromatic_number_fast(std::vector<std::pair<int, int>>
   std::string result = "";
   colors_count--;
   std::vector<bool> colors_count_bits = util::get_binary_representation(colors_count);
-  
+
   for (int i = 0; i < verticies_count; i++) {
     std::string any_color;
     for (int j = 0; j < colors_count_bits.size(); j++) {
@@ -56,7 +56,7 @@ std::string fnc::generate_chromatic_number_fast(std::vector<std::pair<int, int>>
     while (edge_condition.back() != ')') {
       edge_condition.pop_back();
     }
-    result += edge_condition + " ∧ ";
+    result += edge_condition + ") ∧ ";
   }
   while (result.back() != ')') {
     result.pop_back();
@@ -126,6 +126,7 @@ bool fnc::color(std::vector<std::pair<int, int>> graph, int n, bool calc_time) {
     verticies_count = std::max(verticies_count, edge.first);
     verticies_count = std::max(verticies_count, edge.second);
   }
+  verticies_count++;
 
   std::string formula = fnc::generate_chromatic_number_fast(graph, verticies_count, n);
 
@@ -133,7 +134,7 @@ bool fnc::color(std::vector<std::pair<int, int>> graph, int n, bool calc_time) {
     There you can uncomment the line to print generated formula.
   */
 
-  // std::cout << formula << '\n';
+  //std::cout << formula << '\n';
   
   form::Formula form;
   form.read(formula);
