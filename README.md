@@ -1,4 +1,4 @@
-# Math Logic & Theory of Algorithms home work
+# Math Logic & Theory of Algorithms
 ## How to make it work?
 Well, first you need to import the class into your c++ project like so:\
 ```#include "./source/class.h"```\
