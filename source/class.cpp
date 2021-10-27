@@ -1,6 +1,11 @@
 #include "class.h"
 
 void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
+  /*
+    If node is variable, it will check for the syntax, insert in the variables set, 
+    and just push to the node as a child. Else, it will recursively parse the 
+    subformula, and then push the root node of this subformula.
+  */
   if (is_leaf) {
     util::is_variable(batch);
     variables.insert(batch);
@@ -15,6 +20,10 @@ void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
 }
 
 void form::Formula::push(Node* &node, bool is_leaf, bool &is_not, std::string batch) {
+  /*
+    Pushing node. If operation of the node is "not", it will create additional node. 
+    Else, it would just push node as new child.
+  */
   if (is_not) {
     Node* t = new Node();
     t->value = "not";
@@ -27,6 +36,9 @@ void form::Formula::push(Node* &node, bool is_leaf, bool &is_not, std::string ba
 }
 
 void form::Formula::set_operator(Node* &node, std::string s) {
+  /*
+    Setting operator to the node.
+  */
   node->value = s;
   if (util::in_get_operator(s)) {
     node->value = util::get_operator(s);
@@ -34,6 +46,10 @@ void form::Formula::set_operator(Node* &node, std::string s) {
 }
 
 form::Formula::Node* form::Formula::create_node(std::string s) {
+  /*
+    The main process of the parsing.
+  */
+
   Node* node = new Node();
   bool is_leaf = true, is_op = false, is_not = false;
 
@@ -83,6 +99,10 @@ form::Formula::Node* form::Formula::create_node(std::string s) {
 }
 
 bool form::Formula::process(std::vector<bool> values, std::string operation) {
+  /*
+    Returns value of the node with processed operation.
+  */
+
   if (operation == "not")
     return !values.back();
 
@@ -111,6 +131,10 @@ bool form::Formula::process(std::vector<bool> values, std::string operation) {
 }
 
 bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
+  /*
+    Getting value of the function on the evaluation.
+  */
+
   if (node->leaf)
     return var_eval.get(node->value);
 
@@ -123,6 +147,10 @@ bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
 }
 
 bool form::Formula::eval(Node* node, bool (*f)(std::string)) {
+  /*
+    Getting value of the function on the set of variables, given by function f.
+  */
+
   if (node->leaf)
     return f(node->value);
 
@@ -135,6 +163,9 @@ bool form::Formula::eval(Node* node, bool (*f)(std::string)) {
 }
 
 bool form::Formula::sat(Node* node) {
+  /*
+    Exponential (2^N) check for SAT of the formula. Default value for node is root.
+  */
   util::Evaluation v;
   std::vector<bool> tmp;
   for (int ev = 0; ev < (1<<variables.size()); ev++) {
@@ -154,6 +185,10 @@ bool form::Formula::sat(Node* node) {
 }
 
 bool form::Formula::taut(Node* node) {
+  /*
+    Exponential (2^N) check for tautology of the formula. Default value for node is root.
+  */
+
   util::Evaluation v;
   std::vector<bool> tmp;
   for (int ev = 0; ev < (1<<variables.size()); ev++) {
@@ -173,16 +208,19 @@ bool form::Formula::taut(Node* node) {
 }
 
 std::string form::Formula::show(Node* node) {
-  if (node->value == "not") 
+  /*
+    Recursively genereates std::string representation of the node.
+  */
+
+  if (node->value == "not") {
     return "¬" + show(node->nodes.back());
-    
-  if (node->leaf)
+  }
+
+  if (node->leaf) {
     return node->value;
+  }
 
   std::string res = "";
-    
-  if (node != root)
-    res += "(";
     
   for (auto x : node->nodes) {
     res += show(x);
@@ -190,8 +228,10 @@ std::string form::Formula::show(Node* node) {
       res += " " + util::get_symbol(node->value) + " ";   
   }
     
-  if (node != root)
-    res += ")";
+  if (node != root) {
+    res = "(" + res + ")";
+  }
+
   return res;
 }
 
