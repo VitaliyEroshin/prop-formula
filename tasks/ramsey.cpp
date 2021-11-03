@@ -15,7 +15,7 @@ void fnc::cnR(int n, int R, std::vector<int> &subset, std::string &result, std::
       }
     }
 
-    while (!util::is_digit(t.back())) {
+    while (!std::isdigit(t.back())) {
       t.pop_back();
     }
       

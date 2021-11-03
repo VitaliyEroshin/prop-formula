@@ -98,7 +98,7 @@ form::Formula::Node* form::Formula::create_node(std::string s) {
   return node;
 }
 
-bool form::Formula::process(std::vector<bool> values, std::string operation) {
+bool form::Formula::process(std::vector<int> values, std::string operation) {
   /*
     Returns value of the node with processed operation.
   */
@@ -109,25 +109,7 @@ bool form::Formula::process(std::vector<bool> values, std::string operation) {
   else if (operation == "()")
     return values.back();
 
-  else if (operation == "implies") 
-    return !values[0] || values[1];
-
-  bool r = values.back();
-  values.pop_back();
-  for (auto x : values) {
-    if (operation == "or") {
-      r |= x;
-    } else if (operation == "and") {
-      r &= x;
-    } else if (operation == "xor") {
-      r ^= x;
-    }
-  }
-
-  if (operation != "or" and operation != "and" and operation != "xor")
-    throw std::invalid_argument("Unknown logic operation");
-
-  return r;
+  return functions[operation](values);
 }
 
 bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
@@ -138,7 +120,7 @@ bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
   if (node->leaf)
     return var_eval.get(node->value);
 
-  std::vector<bool> nodes_value;
+  std::vector<int> nodes_value;
     
   for (auto x : node->nodes) 
     nodes_value.push_back(eval(x, var_eval));
@@ -269,4 +251,43 @@ bool form::Formula::taut(bool calc_time) {
 
 form::Formula::Node* form::Formula::get_root() {
   return form::Formula::root;
+}
+
+static int form::__conjunction(std::vector<int> arguments) {
+  int result = 1;
+  for (auto argument : arguments) {
+    result &= argument;
+  }
+
+  return result;
+}
+
+static int form::__disjunction(std::vector<int> arguments) {
+  int result = 0;
+  for (auto argument : arguments) {
+    result |= argument;
+  }
+
+  return result;
+}
+
+static int form::__implication(std::vector<int> arguments) {
+  assert(arguments.size() == 2);
+  // implication should take in two arguments.
+  return !arguments[0] || arguments[1];
+}
+
+static int form::__negation(std::vector<int> arguments) {
+  assert(arguments.size() == 1);
+  // negation should take in one argument.
+  return !arguments[0];
+}
+
+form::Formula::Formula() {
+  // Setting up some standard functions
+
+  functions["and"] = form::__conjunction;
+  functions["or"] = form::__disjunction;
+  functions["not"] = form::__negation;
+  functions["implies"] = form::__implication;
 }

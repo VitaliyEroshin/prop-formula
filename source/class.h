@@ -3,12 +3,20 @@
 #include "utils.h"
 
 #include <iostream>
-#include <vector>
 
 namespace form {
+  static int __conjunction(std::vector<int> arguments);
+
+  static int __disjunction(std::vector<int> arguments);
+
+  static int __implication(std::vector<int> arguments);
+
+  static int __negation(std::vector<int> arguments);
+
   class Formula {
     
     private:
+      std::map<std::string, int (*)(std::vector<int>)> functions;
       std::set<std::string> variables;
       struct Node {
         bool leaf = false;
@@ -25,7 +33,7 @@ namespace form {
 
       Node* create_node(std::string s);
 
-      bool process(std::vector<bool> values, std::string operation);
+      bool process(std::vector<int> values, std::string operation);
 
       bool eval(Node* node, util::Evaluation &var_eval);
 
@@ -51,5 +59,7 @@ namespace form {
       bool taut(bool calc_time = false);
 
       Node* get_root();
+      
+      Formula();
   };
 }

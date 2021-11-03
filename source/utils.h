@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <ctype.h>
 
 namespace util {
   struct Evaluation{
@@ -12,11 +13,7 @@ namespace util {
 
     bool get(std::string var_name);
   };
-
-  bool is_digit(char x);
-
-  bool is_letter(char x);
-
+  
   void is_variable(std::string var);
   
   std::string get_symbol(std::string x);

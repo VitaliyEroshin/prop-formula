@@ -16,21 +16,13 @@ bool util::Evaluation::get(std::string var_name) {
   return rule[var_name];
 }
 
-bool util::is_digit(char x) {
-  return (x >= '0') and (x <= '9');
-}
-
-bool util::is_letter(char x) {
-  return (x >= 'a') and (x <= 'z');
-}
-
 void util::is_variable(std::string var) {
   bool p_digit = false;
   for (auto sym : var) {
     bool digit;
-    if (is_letter(sym))
+    if (std::islower(sym))
       digit = false;
-    else if (util::is_digit(sym))
+    else if (std::isdigit(sym))
       digit = true;
     else
       throw std::invalid_argument("Incorrect variable: invalid symbol in variable name");

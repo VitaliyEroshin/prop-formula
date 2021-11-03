@@ -85,7 +85,7 @@ std::string fnc::generate_chromatic_number_slow(std::vector<std::pair<int, int>>
       any_color += "x" + std::to_string(vertex + color * verticies_count) + " ∨ ";
     }
     
-    while (!util::is_digit(any_color.back())) {
+    while (!std::isdigit(any_color.back())) {
       any_color.pop_back();
     }
     
