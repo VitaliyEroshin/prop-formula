@@ -210,6 +210,31 @@ bool form::Formula::taut(Node* node) {
   return true;
 }
 
+void form::Formula::build_truth_table(Node* node) {
+  
+  util::Evaluation v;
+  std::vector<bool> tmp;
+  for (auto x : variables) {
+    std::cout << "| " << x << " ";
+  }
+  std::cout << "|f()|\n";
+  for (int ev = 0; ev < (1<<variables.size()); ev++) {
+    int t = ev;
+    for (int i = 0; i < variables.size(); i++) {
+      tmp.push_back(t&1);
+      t>>=1;
+    }
+    for (auto x : tmp) {
+      std::cout << "| " << x << " ";
+    }
+    for (auto x : variables) {
+      v.push(x, tmp.back());
+      tmp.pop_back();
+    }
+    std::cout << "| " << eval(v) << " |\n";
+  }
+}
+
 std::string form::Formula::show(Node* node) {
   /*
     Recursively genereates std::string representation of the node.
@@ -217,6 +242,17 @@ std::string form::Formula::show(Node* node) {
 
   if (node->value == "not") {
     return "¬" + show(node->nodes.back());
+  }
+
+  if (special_functions.count(node->value)) {
+    std::string res = node->value + "(";
+    for (auto x : node->nodes) {
+      res += show(x) + ", ";
+    }
+    res.pop_back();
+    res.pop_back();
+    res += ")";
+    return res;
   }
 
   if (node->leaf) {
@@ -239,6 +275,7 @@ std::string form::Formula::show(Node* node) {
 }
 
 void form::Formula::read(std::string s) {
+  variables.clear();
   form::Formula::root = create_node(s);
 }
 
@@ -268,6 +305,15 @@ bool form::Formula::taut(bool calc_time) {
   auto end = std::chrono::steady_clock::now();
   std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
   return res;
+}
+
+void form::Formula::build_truth_table(bool calc_time) {
+  auto start = std::chrono::steady_clock::now();
+  build_truth_table(form::Formula::root);
+  if (!calc_time)
+    return;
+  auto end = std::chrono::steady_clock::now();
+  std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms\n";
 }
 
 form::Formula::Node* form::Formula::get_root() {

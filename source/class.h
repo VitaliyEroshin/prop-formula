@@ -40,6 +40,8 @@ namespace form {
 
       bool taut(Node* node);
 
+      void build_truth_table(Node* node);
+
       std::string show(Node* node);
 
       using processFunction = bool (Formula::*)();
@@ -54,6 +56,8 @@ namespace form {
       bool sat(bool calc_time = false);
 
       bool taut(bool calc_time = false);
+
+      void build_truth_table(bool calc_time = false);
 
       Node* get_root();
       

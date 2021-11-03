@@ -51,5 +51,8 @@ int main() {
   f.read("Ramsey(6, 3, 3, 0)");
   std::cout << "Test 7 (Ramsey function): Ramsey(6, 3, 3, 1). Time: " << f.sat(true) << '\n' << f.show() << '\n';
 
+  f.read("x and y");
+  std::cout << "Test 8 (Truth table): x and y. \n";
+  f.build_truth_table(true);
   
 }
