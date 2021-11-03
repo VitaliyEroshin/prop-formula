@@ -1,7 +1,5 @@
 #pragma once
 #include "../source/class.h"
-#include "../source/utils.h"
-#include <utility>
 
 namespace fnc {
   std::string generate_chromatic_number_fast(std::vector<std::pair<int, int>> graph, int verticies_count, int colors_count);

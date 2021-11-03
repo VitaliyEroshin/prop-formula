@@ -1,18 +1,7 @@
 #pragma once
-
 #include "utils.h"
 
-#include <iostream>
-
 namespace form {
-  static int __conjunction(std::vector<int> arguments);
-
-  static int __disjunction(std::vector<int> arguments);
-
-  static int __implication(std::vector<int> arguments);
-
-  static int __negation(std::vector<int> arguments);
-
   class Formula {
     
     private:
@@ -35,9 +24,9 @@ namespace form {
 
       bool process(std::vector<int> values, std::string operation);
 
-      bool eval(Node* node, util::Evaluation &var_eval);
+      int eval(Node* node, util::Evaluation &var_eval);
 
-      bool eval(Node* node, bool (*f)(std::string));
+      int eval(Node* node, bool (*f)(std::string));
 
       bool sat(Node* node);
 
@@ -52,7 +41,7 @@ namespace form {
 
       std::string show();
 
-      bool eval(util::Evaluation &v);
+      int eval(util::Evaluation &v);
 
       bool sat(bool calc_time = false);
 

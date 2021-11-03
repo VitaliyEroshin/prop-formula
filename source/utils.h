@@ -1,9 +1,5 @@
 #pragma once
-#include <string>
-#include <map>
-#include <set>
-#include <vector>
-#include <ctype.h>
+#include "headers.h"
 
 namespace util {
   struct Evaluation{

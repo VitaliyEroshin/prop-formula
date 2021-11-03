@@ -1,4 +1,5 @@
 #include "class.h"
+#include "functions.h"
 
 void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
   /*
@@ -103,16 +104,10 @@ bool form::Formula::process(std::vector<int> values, std::string operation) {
     Returns value of the node with processed operation.
   */
 
-  if (operation == "not")
-    return !values.back();
-
-  else if (operation == "()")
-    return values.back();
-
   return functions[operation](values);
 }
 
-bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
+int form::Formula::eval(Node* node, util::Evaluation &var_eval) {
   /*
     Getting value of the function on the evaluation.
   */
@@ -125,10 +120,10 @@ bool form::Formula::eval(Node* node, util::Evaluation &var_eval) {
   for (auto x : node->nodes) 
     nodes_value.push_back(eval(x, var_eval));
 
-  return form::Formula::process(nodes_value, node->value);
+  return functions[node->value](nodes_value);
 }
 
-bool form::Formula::eval(Node* node, bool (*f)(std::string)) {
+int form::Formula::eval(Node* node, bool (*f)(std::string)) {
   /*
     Getting value of the function on the set of variables, given by function f.
   */
@@ -136,12 +131,12 @@ bool form::Formula::eval(Node* node, bool (*f)(std::string)) {
   if (node->leaf)
     return f(node->value);
 
-  std::vector<bool> nodes_value;
+  std::vector<int> nodes_value;
     
   for (auto x : node->nodes) 
     nodes_value.push_back(eval(x, f));
 
-  return form::Formula::process(nodes_value, node->value);
+  return functions[node->value](nodes_value);
 }
 
 bool form::Formula::sat(Node* node) {
@@ -225,7 +220,7 @@ std::string form::Formula::show() {
   return show(form::Formula::root);
 }
 
-bool form::Formula::eval(util::Evaluation &v) {
+int form::Formula::eval(util::Evaluation &v) {
   return eval(form::Formula::root, v);
 }
 
@@ -253,36 +248,6 @@ form::Formula::Node* form::Formula::get_root() {
   return form::Formula::root;
 }
 
-static int form::__conjunction(std::vector<int> arguments) {
-  int result = 1;
-  for (auto argument : arguments) {
-    result &= argument;
-  }
-
-  return result;
-}
-
-static int form::__disjunction(std::vector<int> arguments) {
-  int result = 0;
-  for (auto argument : arguments) {
-    result |= argument;
-  }
-
-  return result;
-}
-
-static int form::__implication(std::vector<int> arguments) {
-  assert(arguments.size() == 2);
-  // implication should take in two arguments.
-  return !arguments[0] || arguments[1];
-}
-
-static int form::__negation(std::vector<int> arguments) {
-  assert(arguments.size() == 1);
-  // negation should take in one argument.
-  return !arguments[0];
-}
-
 form::Formula::Formula() {
   // Setting up some standard functions
 
@@ -290,4 +255,5 @@ form::Formula::Formula() {
   functions["or"] = form::__disjunction;
   functions["not"] = form::__negation;
   functions["implies"] = form::__implication;
+  functions["xor"] = form::__exclusive_disjunction;
 }
