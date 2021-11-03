@@ -59,6 +59,8 @@ namespace form {
 
       void build_truth_table(bool calc_time = false);
 
+      void add_function(int (*f) (std::vector<int>), std::string alias);
+
       Node* get_root();
       
       Formula();

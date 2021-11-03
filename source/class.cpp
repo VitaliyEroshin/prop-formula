@@ -9,7 +9,8 @@ void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
   */
   if (is_leaf) {
     util::is_variable(batch);
-    variables.insert(batch);
+    if (!std::isdigit(batch[0]))
+      variables.insert(batch);
 
     Node* t = new Node();
     t->leaf = true;
@@ -23,20 +24,14 @@ void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
 void form::Formula::process_function_arguments(Node* &node, std::string batch) {
   std::string value = "";
   for (auto x : batch) {
-    if (std::isdigit(x)) {
+    if (x != ',' && x != ' ') {
       value.push_back(x);
     } else if (!value.empty()) {
-      Node* argument = new Node();
-      argument->value = value;
-      argument->leaf = true;
-      node->nodes.push_back(argument);
+      push_node(node, true, value);
       value = "";
     }
   }
-  Node* argument = new Node();
-  argument->value = value;
-  argument->leaf = true;
-  node->nodes.push_back(argument);
+  push_node(node, true, value);
 }
 
 void form::Formula::push(Node* &node, bool is_leaf, bool &is_function, std::string batch, std::string function_alias) {
@@ -214,8 +209,13 @@ void form::Formula::build_truth_table(Node* node) {
   
   util::Evaluation v;
   std::vector<bool> tmp;
+  std::vector<std::string> variable_names;
   for (auto x : variables) {
-    std::cout << "| " << x << " ";
+    variable_names.push_back(x);
+  }
+  while (!variable_names.empty()) {
+    std::cout << "| " << variable_names.back() << " ";
+    variable_names.pop_back();
   }
   std::cout << "|f()|\n";
   for (int ev = 0; ev < (1<<variables.size()); ev++) {
@@ -331,6 +331,12 @@ form::Formula::Formula() {
 
   unicode_to_function = {{"∧", "and"}, {"∨", "or"}, {"→", "implies"}, {"¬", "not"}, {"⊕", "xor"}};
   function_to_unicode = {{"and", "∧"}, {"or", "∨"}, {"implies", "→"}, {"not", "¬"}, {"xor", "⊕"}};
-  prefix_functions = {"not", "¬", "Ramsey", "Color"};
-  special_functions = {"Ramsey", "Color"};
+  prefix_functions = {"not", "¬"};
+  special_functions = {};
+}
+
+void form::Formula::add_function(int (*f) (std::vector<int>), std::string alias) {
+  prefix_functions.insert(alias);
+  special_functions.insert(alias);
+  functions[alias] = f;
 }
