@@ -20,17 +20,41 @@ void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
   }
 }
 
-void form::Formula::push(Node* &node, bool is_leaf, bool &is_not, std::string batch) {
+void form::Formula::process_function_arguments(Node* &node, std::string batch) {
+  std::string value = "";
+  for (auto x : batch) {
+    if (std::isdigit(x)) {
+      value.push_back(x);
+    } else if (!value.empty()) {
+      Node* argument = new Node();
+      argument->value = value;
+      argument->leaf = true;
+      node->nodes.push_back(argument);
+      value = "";
+    }
+  }
+  Node* argument = new Node();
+  argument->value = value;
+  argument->leaf = true;
+  node->nodes.push_back(argument);
+}
+
+void form::Formula::push(Node* &node, bool is_leaf, bool &is_function, std::string batch, std::string function_alias) {
   /*
     Pushing node. If operation of the node is "not", it will create additional node. 
     Else, it would just push node as new child.
   */
-  if (is_not) {
+  if (is_function) {
     Node* t = new Node();
-    t->value = "not";
+    set_operator(t, function_alias);
+    if (special_functions.count(function_alias)) {
+      process_function_arguments(t, batch);
+      node->nodes.push_back(t);
+      return;
+    }
     push_node(t, is_leaf, batch);
     node->nodes.push_back(t);
-    is_not = false;
+    is_function = false;
   } else {
     push_node(node, is_leaf, batch);
   }
@@ -41,8 +65,8 @@ void form::Formula::set_operator(Node* &node, std::string s) {
     Setting operator to the node.
   */
   node->value = s;
-  if (util::in_get_operator(s)) {
-    node->value = util::get_operator(s);
+  if (unicode_to_function.count(s)) {
+    node->value = unicode_to_function[s];
   }
 }
 
@@ -52,17 +76,19 @@ form::Formula::Node* form::Formula::create_node(std::string s) {
   */
 
   Node* node = new Node();
-  bool is_leaf = true, is_op = false, is_not = false;
+  bool is_leaf = true, is_op = false, is_function = false;
 
   std::string batch = "";
+  std::string function_alias = "";
   int balance = 0;
 
   for (auto x : s) {
     batch.push_back(x);
       
-    if ((batch == "not" or batch == "¬") and balance == 0) {
+    if (prefix_functions.count(batch) and balance == 0) {
+      function_alias = batch;
       batch = "";
-      is_not = true;
+      is_function = true;
     } else if (x == '(') {
       is_leaf = false;
       if (balance == 0)
@@ -78,10 +104,10 @@ form::Formula::Node* form::Formula::create_node(std::string s) {
 
       if (is_op) {
         set_operator(node, batch);
-          is_op = false;
-          is_leaf = true;
+        is_op = false;
+        is_leaf = true;
       } else {
-        push(node, is_leaf, is_not, batch);
+        push(node, is_leaf, is_function, batch, function_alias);
         is_op = true;
       }
       batch = "";
@@ -89,7 +115,7 @@ form::Formula::Node* form::Formula::create_node(std::string s) {
   }
 
   
-  push(node, is_leaf, is_not, batch);
+  push(node, is_leaf, is_function, batch, function_alias);
   int node_size = node->nodes.size();
 
   if (node_size == 1) {
@@ -116,7 +142,7 @@ int form::Formula::eval(Node* node, util::Evaluation &var_eval) {
     return var_eval.get(node->value);
 
   std::vector<int> nodes_value;
-    
+  
   for (auto x : node->nodes) 
     nodes_value.push_back(eval(x, var_eval));
 
@@ -202,7 +228,7 @@ std::string form::Formula::show(Node* node) {
   for (auto x : node->nodes) {
     res += show(x);
     if (x != node->nodes.back())
-      res += " " + util::get_symbol(node->value) + " ";   
+      res += " " + function_to_unicode[node->value] + " ";   
   }
     
   if (node != root) {
@@ -256,4 +282,9 @@ form::Formula::Formula() {
   functions["not"] = form::__negation;
   functions["implies"] = form::__implication;
   functions["xor"] = form::__exclusive_disjunction;
+
+  unicode_to_function = {{"∧", "and"}, {"∨", "or"}, {"→", "implies"}, {"¬", "not"}, {"⊕", "xor"}};
+  function_to_unicode = {{"and", "∧"}, {"or", "∨"}, {"implies", "→"}, {"not", "¬"}, {"xor", "⊕"}};
+  prefix_functions = {"not", "¬", "Ramsey", "Color"};
+  special_functions = {"Ramsey", "Color"};
 }

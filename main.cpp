@@ -19,6 +19,9 @@ int main() {
     Then checking if 6 it's chromatic number (yes).
   
   */
+
+  form::Formula f;
+  
   std::cout << "Test 1 (Color) fully connected, 6 verticies, check 3. Time: " 
             << fnc::color({{0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {1, 2},
                           {1, 3}, {1, 4}, {1, 5}, {2, 3}, {2, 4}, {2, 5}, 
@@ -32,5 +35,21 @@ int main() {
 
   std::cout << "Test 3 (Ramsey) n = 3, m = 3, R = 6. Time: "
             << fnc::ramsey(6, 3, 3, true) << '\n';
+  
+  
+  f.read("x or (y and not(z))");
+  std::cout << "Test 4 (SAT): x or (y and not(z)). Time: " << f.sat(true) << '\n' << f.show() << '\n';
+
+  f.read("x and not(x)");
+  std::cout << "Test 5 (SAT): x and not(x). Time: " << f.sat(true) << '\n' << f.show() << '\n';
+
+  f.functions["Ramsey"] = fnc::__Ramsey;
+  f.read("Ramsey(6, 4, 4, 0)");
+  
+  std::cout << "Test 6 (Ramsey function): Ramsey(6, 4, 4, 0). Time: " << f.sat(true) << '\n' << f.show() << '\n';
+
+  f.read("Ramsey(6, 3, 3, 0)");
+  std::cout << "Test 7 (Ramsey function): Ramsey(6, 3, 3, 1). Time: " << f.sat(true) << '\n' << f.show() << '\n';
+
   
 }

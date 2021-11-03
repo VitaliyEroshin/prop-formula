@@ -5,9 +5,9 @@ namespace util {
   struct Evaluation{
     std::map<std::string, bool> rule;
 
-    void push(std::string var_name, bool var_value);
+    void push(std::string var_name, int var_value);
 
-    bool get(std::string var_name);
+    int get(std::string var_name);
   };
   
   void is_variable(std::string var);

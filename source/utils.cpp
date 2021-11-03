@@ -1,15 +1,14 @@
 #include "utils.h"
 
-void util::Evaluation::push(std::string var_name, bool var_value) {
+void util::Evaluation::push(std::string var_name, int var_value) {
   rule[var_name] = var_value;
 }
 
-bool util::Evaluation::get(std::string var_name) {
-  if (var_name == "1")
-    return 1;
-  if (var_name == "0")
-    return 0;
-    
+int util::Evaluation::get(std::string var_name) {
+  if (std::isdigit(var_name[0])) {
+    return std::stoi(var_name);
+  }
+
   assert(rule.count(var_name));
   // Variable is not defined.
 

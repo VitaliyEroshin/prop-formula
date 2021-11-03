@@ -4,9 +4,15 @@
 namespace form {
   class Formula {
     
-    private:
+    public:
       std::map<std::string, int (*)(std::vector<int>)> functions;
+      std::map<std::string, std::string> unicode_to_function;
+      std::map<std::string, std::string> function_to_unicode;
+
       std::set<std::string> variables;
+      std::set<std::string> prefix_functions;
+      std::set<std::string> special_functions;
+
       struct Node {
         bool leaf = false;
         std::string value = "";
@@ -14,9 +20,11 @@ namespace form {
       };
       Node* root;
 
+      void process_function_arguments(Node* &node, std::string batch);
+
       void push_node(Node* &node, bool is_leaf, std::string batch);
 
-      void push(Node* &node, bool is_leaf, bool &is_not, std::string batch);
+      void push(Node* &node, bool is_leaf, bool &is_not, std::string batch, std::string function_alias);
 
       void set_operator(Node* &node, std::string s);
 
