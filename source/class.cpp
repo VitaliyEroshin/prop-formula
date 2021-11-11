@@ -23,15 +23,27 @@ void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
 
 void form::Formula::process_function_arguments(Node* &node, std::string batch) {
   std::string value = "";
+  int balance = 0;
+  bool is_leaf = true;
   for (auto x : batch) {
-    if (x != ',' && x != ' ') {
+    if (balance != 0) {
+      if (x == ')') {
+        balance--;
+      }
       value.push_back(x);
-    } else if (!value.empty()) {
+    } else if (balance == 0 && x != ',' && x != ' ') {
+      if (x == '(') {
+        balance++;
+        is_leaf = false;
+      }
+      value.push_back(x);
+    } else if (balance == 0 && !value.empty()) {
       push_node(node, true, value);
       value = "";
+      is_leaf = true;
     }
   }
-  push_node(node, true, value);
+  push_node(node, is_leaf, value);
 }
 
 void form::Formula::push(Node* &node, bool is_leaf, bool &is_function, std::string batch, std::string function_alias) {
