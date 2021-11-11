@@ -46,6 +46,16 @@ namespace form {
 
       using processFunction = bool (Formula::*)();
 
+      void to_cnf(Node*& node);
+      
+      void negate(Node*& node);
+
+      void remove_implication(Node*& node);
+
+      void to_disjunct(Node*& node);
+
+      void simplify(Node* node);
+      
     public:
       void read(std::string s);
 
@@ -61,6 +71,9 @@ namespace form {
 
       void add_function(int (*f) (std::vector<int>), std::string alias);
 
+      void negate();
+
+      void to_cnf();
       Node* get_root();
       
       Formula();

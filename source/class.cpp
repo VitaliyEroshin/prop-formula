@@ -352,3 +352,100 @@ void form::Formula::add_function(int (*f) (std::vector<int>), std::string alias)
   special_functions.insert(alias);
   functions[alias] = f;
 }
+
+void form::Formula::to_cnf(Node*& node) {
+  simplify(node);
+  return;
+  if (node->value == "and") {
+    for (auto& disjunct : node->nodes) {
+      to_disjunct(disjunct);
+    }
+  }
+}
+
+void form::Formula::negate(Node*& node) {
+  if (node->value == "not") {
+    Node* to_delete = node;
+    node = node->nodes.back();
+    delete to_delete;
+  } else {
+    Node* negation = new Node();
+    negation->value = "not";
+    negation->nodes.push_back(node);
+    node = negation;
+  }
+}
+
+void form::Formula::negate() {
+  negate(root);
+}
+
+void form::Formula::to_cnf() {
+  to_cnf(root);
+}
+
+void form::Formula::remove_implication(Node*& node) {
+  node->value = "or";
+  negate(node->nodes[0]);
+}
+
+void form::Formula::simplify(Node* node) {
+  if (node->leaf) {
+    return;
+  }
+  
+  if (node->value == "not") {
+    if (node->nodes[0]->leaf) {
+      return;
+    }
+    Node* to_delete = node;
+    Node* de_morgan = node->nodes.back();
+    if (de_morgan->value == "implies") {
+      remove_implication(de_morgan);
+    }
+    if (de_morgan->value == "or") {
+      de_morgan->value = "and";
+    } else {
+      de_morgan->value = "or";
+    }
+    for (auto &v : de_morgan->nodes) {
+      simplify(v);
+      negate(v);
+    }
+    node = de_morgan;
+    delete to_delete;
+    return;
+  }
+
+  if (node->value == "implies") {
+    simplify(node->nodes[0]);
+    simplify(node->nodes[1]);
+    remove_implication(node);
+    simplify(node);
+    return;
+  }
+
+  std::vector<Node*> nodes;
+  for (auto& v : node->nodes) {
+    simplify(v);
+    if (v->value == node->value) {
+      for (auto &vn : v->nodes) {
+        nodes.push_back(vn);
+      }
+      delete v;
+    } else {
+      nodes.push_back(v);
+    }
+  }
+  node->nodes = nodes;
+  return;
+}
+
+void form::Formula::to_disjunct(Node*& node) {
+  if (node->leaf) {
+    return;
+  }
+  if (node->value == "implies") {
+    remove_implication(node);
+  }
+}
