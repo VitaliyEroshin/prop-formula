@@ -438,6 +438,9 @@ void form::Formula::simplify(Node* node) {
     }
   }
   node->nodes = nodes;
+  for (auto &v : node->nodes) {
+    //
+  }
   return;
 }
 
