@@ -55,7 +55,7 @@ namespace form {
       
       void negate(Node*& node);
 
-      void de_morgan(Node*& node);
+      void deMorgan(Node*& node);
 
       void remove_implication(Node*& node);
 
@@ -90,7 +90,12 @@ namespace form {
 
       void negate();
 
-      void de_morgan() { de_morgan(root); };
+      void distribute(Node*& node);
+
+      void partiteNode(std::vector<Node*>& newNodes, std::vector<Node*>& set, Node*& node, int i);
+
+      void distribute() { distribute(root); };
+      void de_morgan() { deMorgan(root); };
 
       void to_cnf();
       Node* get_root();

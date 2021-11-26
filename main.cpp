@@ -29,8 +29,10 @@ void interpret() {
       std::cout << formula.taut(true) << '\n';
     } else if (type == "sat") {
       std::cout << formula.sat(true) << '\n';
-    } else if (type == "de_morgan") {
+    } else if (type == "deMorgan") {
       formula.de_morgan();
+    } else if (type == "distribute") {
+      formula.distribute();
     }
   }
 }
@@ -41,6 +43,5 @@ int main() {
     freopen("./io/output.txt", "w", stdout);
   #endif
 
-  test();
   interpret();
 }

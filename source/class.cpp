@@ -417,7 +417,57 @@ void form::Formula::remove_implication(Node*& node) {
   negate(node->nodes[0]);
 }
 
-void form::Formula::de_morgan(Node*& node) {
+void form::Formula::distribute(Node*& node) {
+
+  std::string outerOperator = node->value;
+  std::string innerOperator;
+  if (outerOperator == "or") {
+    innerOperator = "and";
+  } else if (outerOperator == "and") {
+    innerOperator = "or";
+  } else {
+    return;
+  }
+
+  std::vector<Node*> newNodes;
+  std::vector<Node*> set;
+  for (auto &x : node->nodes) {
+    if (x->value == innerOperator)
+      partiteNode(newNodes, set, node, 0);
+  }
+
+  //delete node->nodes.
+  node->nodes.clear();
+  for (auto &x : newNodes) {
+    node->nodes.push_back(x);
+  }
+
+  // (a or (a and (b or c)) or d = a or (a and b) or (a and c) or d
+}
+
+void form::Formula::partiteNode(std::vector<Node*>& newNodes, std::vector<Node*>& set, Node*& node, int i) {
+  // change set and push it to newNodes.
+  if (i == node->nodes.size()) {
+    Node* group = new Node();
+    group->type = node->type;
+    group->value = node->value;
+    for (auto &x : set) {
+      group->nodes.push_back(x);
+    }
+
+    newNodes.push_back(group);
+    return;
+  } else {
+    // check if nodes[i] value = outer_operation
+    for (auto &x : node->nodes[i]->nodes) {
+      set.push_back(x);
+      partiteNode(newNodes, set, node, i + 1);
+      set.pop_back();
+    }
+  }
+}
+
+void form::Formula::deMorgan(Node*& node) {
   /*
     Literally applies de Morgan rule to the node.
    */
