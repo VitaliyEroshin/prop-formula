@@ -4,3 +4,5 @@ build
 .gitignore
 release.dSYM
 bin/*
+.idea
+io
