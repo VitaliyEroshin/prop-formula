@@ -8,5 +8,5 @@ namespace fnc {
   std::string generate_ramsey_formula(int R, int n, int m);
 
   bool ramsey(int R, int n, int m, bool print_time = false);
-  int __Ramsey(std::vector<int> arguments);
+  int __Ramsey(const std::vector<int>& arguments);
 }

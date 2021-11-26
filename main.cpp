@@ -1,4 +1,5 @@
 #include "source/class.h"
+#include "etc/test.h"
 
 void interpret() {
   form::Formula formula;
@@ -24,6 +25,12 @@ void interpret() {
       std::cout << formula.show() << '\n';
     } else if (type == "buildtt") {
       formula.build_truth_table();
+    } else if (type == "taut") {
+      std::cout << formula.taut(true) << '\n';
+    } else if (type == "sat") {
+      std::cout << formula.sat(true) << '\n';
+    } else if (type == "de_morgan") {
+      formula.de_morgan();
     }
   }
 }
@@ -33,6 +40,7 @@ int main() {
     freopen("./io/input.txt", "r", stdin);
     freopen("./io/output.txt", "w", stdout);
   #endif
- 
+
+  test();
   interpret();
 }

@@ -1,194 +1,219 @@
 #include "class.h"
 #include "functions.h"
 
-void form::Formula::push_node(Node* &node, bool is_leaf, std::string batch) {
+void form::Formula::addLeaf(Node*& node, const std::string& batch) {
+  Node* leaf = new Node();
+  leaf->value = batch;
+  setType(leaf);
+  if (leaf->type == Node::variable) {
+    variables.insert(leaf->value);
+  }
+  node->nodes.push_back(leaf);
+}
+
+void form::Formula::addNode(Node*& node, bool isUnary, const std::string& value) {
   /*
     If node is variable, it will check for the syntax, insert in the variables set, 
     and just push to the node as a child. Else, it will recursively parse the 
     subformula, and then push the root node of this subformula.
   */
-  if (is_leaf) {
-    util::is_variable(batch);
-    if (!std::isdigit(batch[0]))
-      variables.insert(batch);
 
-    Node* t = new Node();
-    t->leaf = true;
-    t->value = batch;
-    node->nodes.push_back(t);
-  } else  {
-    node->nodes.push_back(create_node(batch));
+  if (isUnary) {
+    addLeaf(node, value);
+  } else {
+    node->nodes.push_back(parseFormula(value));
   }
 }
 
-void form::Formula::process_function_arguments(Node* &node, std::string batch) {
-  std::string value = "";
+void form::Formula::parseFunctionalArguments(Node*& node, const std::string& arguments) {
+  std::string value;
   int balance = 0;
-  bool is_leaf = true;
-  for (auto x : batch) {
+  bool isLeaf = true;
+  for (auto c : arguments) {
     if (balance != 0) {
-      if (x == ')') {
+      if (c == ')') {
         balance--;
       }
-      value.push_back(x);
-    } else if (balance == 0 && x != ',' && x != ' ') {
-      if (x == '(') {
+      value.push_back(c);
+    } else if (c != ',' && c != ' ') {
+      if (c == '(') {
         balance++;
-        is_leaf = false;
+        isLeaf = false;
       }
-      value.push_back(x);
-    } else if (balance == 0 && !value.empty()) {
-      push_node(node, true, value);
+      value.push_back(c);
+    } else if (!value.empty()) {
+      addNode(node, true, value);
       value = "";
-      is_leaf = true;
+      isLeaf = true;
     }
   }
-  push_node(node, is_leaf, value);
+  addNode(node, isLeaf, value);
 }
 
-void form::Formula::push(Node* &node, bool is_leaf, bool &is_function, std::string batch, std::string function_alias) {
+void form::Formula::push(Node* &node, bool isLeaf, bool &isFunctionalSymbol, const std::string& batch,
+                         const std::string& functionAlias) {
   /*
     Pushing node. If operation of the node is "not", it will create additional node. 
     Else, it would just push node as new child.
   */
-  if (is_function) {
+
+  if (isFunctionalSymbol) {
     Node* t = new Node();
-    set_operator(t, function_alias);
-    if (special_functions.count(function_alias)) {
-      process_function_arguments(t, batch);
+    setOperator(t, functionAlias);
+    if (functionalSymbols.count(functionAlias)) {
+      parseFunctionalArguments(t, batch);
       node->nodes.push_back(t);
       return;
     }
-    push_node(t, is_leaf, batch);
+    addNode(t, isLeaf, batch);
     node->nodes.push_back(t);
-    is_function = false;
+    isFunctionalSymbol = false;
   } else {
-    push_node(node, is_leaf, batch);
+    addNode(node, isLeaf, batch);
   }
 }
 
-void form::Formula::set_operator(Node* &node, std::string s) {
+void form::Formula::setOperator(Node* &node, const std::string& alias) {
   /*
     Setting operator to the node.
   */
-  node->value = s;
-  if (unicode_to_function.count(s)) {
-    node->value = unicode_to_function[s];
+  if (logicalOperationsFromUnicode.count(alias)) {
+    node->value = logicalOperationsFromUnicode[alias];
+    node->type = Node::logical;
+    return;
+  }
+
+  if (logicalOperationsToUnicode.count(alias)) {
+    node->value = alias;
+    node->type = Node::logical;
+    return;
+  }
+
+  if (functionalSymbols.count(alias)) {
+    node->value = alias;
+    node->type = Node::functional;
+    return;
   }
 }
 
-form::Formula::Node* form::Formula::create_node(std::string s) {
+form::Formula::Node* form::Formula::parseFormula(const std::string& formulaStr) {
   /*
     The main process of the parsing.
   */
 
   Node* node = new Node();
-  bool is_leaf = true, is_op = false, is_function = false;
+  bool isLeaf = true, isOperation = false, isFunctionalSymbol = false;
 
   std::string batch = "";
-  std::string function_alias = "";
+  std::string functionAlias = "";
   int balance = 0;
 
-  for (auto x : s) {
+  for (auto x : formulaStr) {
     batch.push_back(x);
-      
-    if (prefix_functions.count(batch) and balance == 0) {
-      function_alias = batch;
+    if ((prefixOperations.count(batch) || predicateOperations.count(batch) || functionalSymbols.count(batch))
+          && balance == 0) {
+      functionAlias = batch;
       batch = "";
-      is_function = true;
+      isFunctionalSymbol = true;
     } else if (x == '(') {
-      is_leaf = false;
+      isLeaf = false;
       if (balance == 0)
         batch.pop_back();
       balance++;
     } else if (x == ')') {
-      is_leaf = false;
+      isLeaf = false;
       if (balance == 1)
         batch.pop_back();
       balance--;
     } else if (x == ' ' and balance == 0) {
       batch.pop_back();
 
-      if (is_op) {
-        set_operator(node, batch);
-        is_op = false;
-        is_leaf = true;
+      if (isOperation) {
+        setOperator(node, batch);
+        isOperation = false;
+        isLeaf = true;
       } else {
-        push(node, is_leaf, is_function, batch, function_alias);
-        is_op = true;
+        push(node, isLeaf, isFunctionalSymbol, batch, functionAlias);
+        isOperation = true;
       }
       batch = "";
     }
   }
 
   
-  push(node, is_leaf, is_function, batch, function_alias);
-  int node_size = node->nodes.size();
+  push(node, isLeaf, isFunctionalSymbol, batch, functionAlias);
 
-  if (node_size == 1) {
-    node = node->nodes[0];
+  if (node->nodes.size() == 1) {
+    /*
+      Brackets compression
+    */
+
+    node = node->nodes.back();
   }
       
   return node;
 }
 
-bool form::Formula::process(std::vector<int> values, std::string operation) {
-  /*
-    Returns value of the node with processed operation.
-  */
-
-  return functions[operation](values);
-}
-
-int form::Formula::eval(Node* node, util::Evaluation &var_eval) {
+int form::Formula::eval(Node* node, util::Evaluation &evaluation) {
   /*
     Getting value of the function on the evaluation.
   */
 
-  if (node->leaf)
-    return var_eval.get(node->value);
+  if (node->type == Node::variable) {
+    return evaluation.get(node->value);
+  }
 
-  std::vector<int> nodes_value;
+  if (node->type == Node::constant) {
+    return getConstant(node->value);
+  }
+  std::vector<int> values;
   
-  for (auto x : node->nodes) 
-    nodes_value.push_back(eval(x, var_eval));
+  for (auto& x : node->nodes) {
+    values.push_back(eval(x, evaluation));
+  }
 
-  return functions[node->value](nodes_value);
+  return applyOperator(node->value, values, node->type);
 }
 
-int form::Formula::eval(Node* node, bool (*f)(std::string)) {
+int form::Formula::eval(Node* node, int (*f)(std::string)) {
   /*
     Getting value of the function on the set of variables, given by function f.
   */
 
-  if (node->leaf)
+  if (node->type == Node::variable) {
     return f(node->value);
+  }
 
-  std::vector<int> nodes_value;
+  if (node->type == Node::constant) {
+    return getConstant(node->value);
+  }
+
+  std::vector<int> values;
     
-  for (auto x : node->nodes) 
-    nodes_value.push_back(eval(x, f));
+  for (auto& x : node->nodes) {
+    values.push_back(eval(x, f));
+  }
 
-  return functions[node->value](nodes_value);
+  return applyOperator(node->value, values, node->type);
 }
 
 bool form::Formula::sat(Node* node) {
   /*
     Exponential (2^N) check for SAT of the formula. Default value for node is root.
   */
-  util::Evaluation v;
-  std::vector<bool> tmp;
-  for (int ev = 0; ev < (1<<variables.size()); ev++) {
-    int t = ev;
+  util::Evaluation evaluation;
+  std::vector<bool> variableValues;
+  for (int variableSet = 0; variableSet < (1 << variables.size()); variableSet++) {
+    int variableFromInt = variableSet;
     for (int i = 0; i < variables.size(); i++) {
-      tmp.push_back(t&1);
-      t>>=1;
+      variableValues.push_back(variableFromInt & 1);
+      variableFromInt>>=1;
     }
-    for (auto x : variables) {
-      v.push(x, tmp.back());
-      tmp.pop_back();
+    for (auto& x : variables) {
+      evaluation.push(x, variableValues.back());
+      variableValues.pop_back();
     }
-    if (eval(v))
+    if (eval(evaluation))
       return true;
   }
   return false;
@@ -199,84 +224,84 @@ bool form::Formula::taut(Node* node) {
     Exponential (2^N) check for tautology of the formula. Default value for node is root.
   */
 
-  util::Evaluation v;
-  std::vector<bool> tmp;
-  for (int ev = 0; ev < (1<<variables.size()); ev++) {
-    int t = ev;
+  util::Evaluation evaluation;
+  std::vector<bool> variableValues;
+  for (int variableSet = 0; variableSet < (1 << variables.size()); variableSet++) {
+    int variableFromInt = variableSet;
     for (int i = 0; i < variables.size(); i++) {
-      tmp.push_back(t&1);
-      t>>=1;
+      variableValues.push_back(variableFromInt & 1);
+      variableFromInt >>= 1;
     }
     for (auto x : variables) {
-      v.push(x, tmp.back());
-      tmp.pop_back();
+      evaluation.push(x, variableValues.back());
+      variableValues.pop_back();
     }
-    if (!eval(v))
+    if (!eval(evaluation))
       return false;
   }
   return true;
 }
 
-void form::Formula::build_truth_table(Node* node) {
+void form::Formula::buildTruthTable(Node* node) {
   
-  util::Evaluation v;
-  std::vector<bool> tmp;
-  std::vector<std::string> variable_names;
+  util::Evaluation evaluation;
+  std::vector<bool> variableValues;
+  std::vector<std::string> variableAliases;
   for (auto x : variables) {
-    variable_names.push_back(x);
+    variableAliases.push_back(x);
   }
-  while (!variable_names.empty()) {
-    std::cout << "| " << variable_names.back() << " ";
-    variable_names.pop_back();
+  while (!variableAliases.empty()) {
+    std::cout << "| " << variableAliases.back() << " ";
+    variableAliases.pop_back();
   }
   std::cout << "|f()|\n";
-  for (int ev = 0; ev < (1<<variables.size()); ev++) {
-    int t = ev;
+  for (int variableSet = 0; variableSet < (1 << variables.size()); variableSet++) {
+    int variableFromInt = variableSet;
     for (int i = 0; i < variables.size(); i++) {
-      tmp.push_back(t&1);
-      t>>=1;
+      variableValues.push_back(variableFromInt & 1);
+      variableFromInt>>=1;
     }
-    for (auto x : tmp) {
+    for (auto x : variableValues) {
       std::cout << "| " << x << " ";
     }
     for (auto x : variables) {
-      v.push(x, tmp.back());
-      tmp.pop_back();
+      evaluation.push(x, variableValues.back());
+      variableValues.pop_back();
     }
-    std::cout << "| " << eval(v) << " |\n";
+    std::cout << "| " << eval(evaluation) << " |\n";
   }
 }
 
 std::string form::Formula::show(Node* node) {
   /*
-    Recursively genereates std::string representation of the node.
+    Recursively generates std::string representation of the node.
   */
 
   if (node->value == "not") {
     return "¬" + show(node->nodes.back());
   }
 
-  if (special_functions.count(node->value)) {
+  if (functionalSymbols.count(node->value) || predicateOperations.count(node->value)) {
     std::string res = node->value + "(";
     for (auto x : node->nodes) {
       res += show(x) + ", ";
     }
     res.pop_back();
-    res.pop_back();
-    res += ")";
+    res.back() = ')';
     return res;
   }
 
-  if (node->leaf) {
+  if (node->type == Node::constant || node->type == Node::variable) {
     return node->value;
   }
 
-  std::string res = "";
+  std::string res;
     
   for (auto x : node->nodes) {
     res += show(x);
-    if (x != node->nodes.back())
-      res += " " + function_to_unicode[node->value] + " ";   
+    if (x != node->nodes.back()) {
+      res += " " + logicalOperationsToUnicode[node->value] + " ";
+    }
   }
     
   if (node != root) {
@@ -288,7 +313,7 @@ std::string form::Formula::show(Node* node) {
 
 void form::Formula::read(std::string s) {
   variables.clear();
-  form::Formula::root = create_node(s);
+  form::Formula::root = parseFormula(s);
 }
 
 std::string form::Formula::show() {
@@ -321,7 +346,7 @@ bool form::Formula::taut(bool calc_time) {
 
 void form::Formula::build_truth_table(bool calc_time) {
   auto start = std::chrono::steady_clock::now();
-  build_truth_table(form::Formula::root);
+  buildTruthTable(form::Formula::root);
   if (!calc_time)
     return;
   auto end = std::chrono::steady_clock::now();
@@ -333,24 +358,24 @@ form::Formula::Node* form::Formula::get_root() {
 }
 
 form::Formula::Formula() {
-  // Setting up some standard functions
+  // Setting up some standard logicalOperations
 
-  functions["and"] = form::__conjunction;
-  functions["or"] = form::__disjunction;
-  functions["not"] = form::__negation;
-  functions["implies"] = form::__implication;
-  functions["xor"] = form::__exclusive_disjunction;
+  logicalOperations["and"] = form::_conjunction;
+  logicalOperations["or"] = form::_disjunction;
+  logicalOperations["implies"] = form::_implication;
+  logicalOperations["xor"] = form::_exclusive_disjunction;
+  logicalOperations["not"] = form::_negation;
+  logicalOperations["¬"] = form::_negation;
+  prefixOperations = {"not", "¬"};
+  logicalOperationsFromUnicode = {{"∧", "and"}, {"∨", "or"}, {"→", "implies"},
+                                  {"¬", "not"}, {"⊕", "xor"}};
+  logicalOperationsToUnicode = {{"and", "∧"}, {"or", "∨"}, {"implies", "→"},
+                                {"not", "¬"}, {"xor", "⊕"}};
 
-  unicode_to_function = {{"∧", "and"}, {"∨", "or"}, {"→", "implies"}, {"¬", "not"}, {"⊕", "xor"}};
-  function_to_unicode = {{"and", "∧"}, {"or", "∨"}, {"implies", "→"}, {"not", "¬"}, {"xor", "⊕"}};
-  prefix_functions = {"not", "¬"};
-  special_functions = {};
 }
 
-void form::Formula::add_function(int (*f) (std::vector<int>), std::string alias) {
-  prefix_functions.insert(alias);
-  special_functions.insert(alias);
-  functions[alias] = f;
+void form::Formula::addFunction(int (*f) (const std::vector<int>&), std::string alias) {
+  functionalSymbols[alias] = f;
 }
 
 void form::Formula::to_cnf(Node*& node) {
@@ -385,17 +410,42 @@ void form::Formula::to_cnf() {
 }
 
 void form::Formula::remove_implication(Node*& node) {
+  if (node->value != "implies") {
+    return;
+  }
   node->value = "or";
   negate(node->nodes[0]);
 }
 
+void form::Formula::de_morgan(Node*& node) {
+  /*
+    Literally applies de Morgan rule to the node.
+   */
+  if (node->value == "not") {
+    std::string inner_value = node->nodes.back()->value;
+    if (inner_value == "or" || inner_value == "and") {
+      negate(node);
+      node->value = (node->value == "or") ? "and" : "or";
+      for (auto& child : node->nodes) {
+        negate(child);
+      }
+    }
+  } else if (node->value == "or" || node->value == "and") {
+    node->value = (node->value == "or") ? "and" : "or";
+    for (auto& child : node->nodes) {
+      negate(child);
+    }
+    negate(node);
+  }
+}
+
 void form::Formula::simplify(Node* node) {
-  if (node->leaf) {
+  if (node->type == Node::variable || node->type == Node::constant) {
     return;
   }
   
   if (node->value == "not") {
-    if (node->nodes[0]->leaf) {
+    if (node->nodes.back()->type == Node::variable || node->nodes.back()->type == Node::constant) {
       return;
     }
     Node* to_delete = node;
@@ -445,10 +495,60 @@ void form::Formula::simplify(Node* node) {
 }
 
 void form::Formula::to_disjunct(Node*& node) {
-  if (node->leaf) {
+  if (node->type == Node::variable || node->type == Node::constant) {
     return;
   }
   if (node->value == "implies") {
     remove_implication(node);
+  }
+}
+
+void form::Formula::setType(Node*& node) const {
+  if (isConstant(node->value)) {
+    node->type = Node::constant;
+  } else {
+    node->type = Node::variable;
+  }
+
+  bool haveDigit = false;
+  bool haveLower = false;
+  for (auto& sym : node->value) {
+    if (std::islower(sym)) {
+      assert(!haveDigit);
+      haveLower = true;
+      continue;
+    }
+    if (std::isdigit(sym)) {
+      haveDigit = true;
+      continue;
+    }
+    throw std::runtime_error("Unknown symbol in variable/constant name.");
+  }
+  if (!haveLower) {
+    node->type = Node::constant;
+  }
+}
+
+bool form::Formula::isConstant(const std::string& value) const {
+  if (constants.count(value)) {
+    return true;
+  }
+  return false;
+}
+
+int form::Formula::getConstant(const std::string& value) {
+  if (!constants.count(value)) {
+    constants[value] = stoi(value);
+  }
+  return constants[value];
+}
+
+int form::Formula::applyOperator(const std::string &operatorAlias, const std::vector<int> &values, Node::typeE type) {
+  if (type == Node::logical) {
+    return logicalOperations[operatorAlias](values);
+  } else if (type == Node::predicate) {
+    return predicateOperations[operatorAlias](values);
+  } else {
+    return functionalSymbols[operatorAlias](values);
   }
 }
