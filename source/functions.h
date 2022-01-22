@@ -1,15 +1,15 @@
 #include "headers.h"
 
 namespace form {
-  int __conjunction(std::vector<int> arguments);
+  bool _conjunction(const std::vector<int>& arguments);
 
-  int __disjunction(std::vector<int> arguments);
+  bool _disjunction(const std::vector<int>& arguments);
 
-  int __implication(std::vector<int> arguments);
+  bool _implication(const std::vector<int>& arguments);
 
-  int __negation(std::vector<int> arguments);
+  bool _negation(const std::vector<int>& arguments);
 
-  int __exclusive_disjunction(std::vector<int> arguments);
+  bool _exclusive_disjunction(const std::vector<int>& arguments);
 
-  int __brackets(std::vector<int> arguments);
+  bool _equality(const std::vector<int>& arguments);
 }

@@ -4,3 +4,6 @@ build
 .gitignore
 release.dSYM
 bin/*
+.idea
+io
+cmake-build-debug

@@ -1,6 +1,6 @@
 #include "test.h"
 
-int even(std::vector<int> arguments) {
+int even(const std::vector<int>& arguments) {
   int sum = 0;
   for (auto x : arguments) {
     sum += x;
@@ -41,7 +41,7 @@ void test() {
   f.read("x and not(x)");
   std::cout << "Test 5 (SAT): x and not(x). Time: " << f.sat(true) << '\n' << f.show() << '\n';
 
-  f.add_function(fnc::__Ramsey, "Ramsey");
+  f.addFunction(fnc::__Ramsey, "Ramsey");
   f.read("Ramsey(6, 4, 4, 0)");
   
   std::cout << "Test 6 (Ramsey function): Ramsey(6, 4, 4, 0). Time: " << f.sat(true) << '\n' << f.show() << '\n';
@@ -53,7 +53,7 @@ void test() {
   std::cout << "Test 8 (Truth table): x and y. \n";
   f.build_truth_table(true);
 
-  f.add_function(even, "Even");
+  f.addFunction(even, "Even");
 
   f.read("x or Even(x, y, z)");
   std::cout << "Test 9 (Truth table): x or Even(x, y, z). \n";

@@ -66,7 +66,7 @@ bool fnc::ramsey(int R, int n, int m, bool print_time) {
   return form.taut(print_time);
 }
 
-int fnc::__Ramsey(std::vector<int> arguments) {
+int fnc::__Ramsey(const std::vector<int>& arguments) {
   assert(arguments.size() == 4);
   return fnc::ramsey(arguments[0], arguments[1], arguments[2], arguments[3]);
 }
